@@ -21,6 +21,7 @@ class CanvasEngine: ObservableObject {
     @Published var currentStroke: Stroke?
     @Published var offset: CGSize = .zero
     @Published var virtualCursorPosition: CGPoint?
+    @Published private(set) var isStraightStroke = false
     
     @Published var currentMode: DrawingMode = .pen
     @Published var isMouseVisible: Bool = true
@@ -47,7 +48,8 @@ class CanvasEngine: ObservableObject {
     
     // MARK: - Drawing & Erasing
     
-    func beginStroke(at point: CGPoint) {
+    func beginStroke(at point: CGPoint, straightLine: Bool = false) {
+        isStraightStroke = currentMode == .pen && straightLine
         if currentMode == .eraser {
             // Save snapshot before erasing begins
             undoStack.append(strokes)
@@ -62,7 +64,11 @@ class CanvasEngine: ObservableObject {
         if currentMode == .eraser {
             eraseStrokes(at: point)
         } else {
-            currentStroke?.points.append(point)
+            if isStraightStroke, let start = currentStroke?.points.first {
+                currentStroke?.points = [start, point]
+            } else {
+                currentStroke?.points.append(point)
+            }
         }
     }
     
@@ -70,8 +76,16 @@ class CanvasEngine: ObservableObject {
         let threshold: CGFloat = eraserRadius
         
         strokes.removeAll { stroke in
-            stroke.points.contains { p in
-                hypot(p.x - point.x, p.y - point.y) < threshold
+            guard let first = stroke.points.first else { return false }
+            if hypot(first.x - point.x, first.y - point.y) < threshold { return true }
+            // Test segments as well as endpoints, including the middle of straight lines.
+            return zip(stroke.points, stroke.points.dropFirst()).contains { start, end in
+                let dx = end.x - start.x
+                let dy = end.y - start.y
+                let lengthSquared = dx * dx + dy * dy
+                guard lengthSquared > 0 else { return false }
+                let t = max(0, min(1, ((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSquared))
+                return hypot(point.x - (start.x + t * dx), point.y - (start.y + t * dy)) < threshold
             }
         }
     }
@@ -83,10 +97,12 @@ class CanvasEngine: ObservableObject {
             strokes.append(stroke)
         }
         currentStroke = nil
+        isStraightStroke = false
     }
     
     func cancelStroke() {
         currentStroke = nil
+        isStraightStroke = false
     }
     
     func clearAll() {
@@ -99,7 +115,7 @@ class CanvasEngine: ObservableObject {
     
     func undo() {
         guard let previous = undoStack.popLast() else { return }
-        currentStroke = nil
+        cancelStroke()
         strokes = previous
     }
     

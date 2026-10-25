@@ -55,7 +55,8 @@ class TrackpadView: NSView {
             
             let offset = engine?.offset ?? .zero
             let canvasPoint = CGPoint(x: point.x - offset.width, y: point.y - offset.height)
-            engine?.beginStroke(at: canvasPoint)
+            // Latch Shift for this stroke, so releasing the key before lifting does not bend it.
+            engine?.beginStroke(at: canvasPoint, straightLine: event.modifierFlags.contains(.shift))
         }
     }
     

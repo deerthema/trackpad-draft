@@ -145,6 +145,7 @@ struct SettingsView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         shortcutRow("1", L10n.switchToPen)
                         shortcutRow("2", L10n.switchToEraser)
+                        shortcutRow("⇧ Shift", L10n.straightLine)
                         shortcutRow("⌫ Delete", L10n.clearCanvas)
                         shortcutRow("⌘Z", L10n.undoStroke)
                         shortcutRow("Esc", L10n.hideDraft)

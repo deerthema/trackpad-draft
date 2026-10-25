@@ -58,6 +58,17 @@ struct L10n {
     static var moveWindow: String { current == .zh ? "移动窗口" : "Move Window" }
     static var undoStroke: String { current == .zh ? "撤回上一笔" : "Undo Last Stroke" }
     static var penColor: String { current == .zh ? "画笔颜色" : "Pen Color" }
+    static var pen: String { current == .zh ? "画笔" : "Pen" }
+    static var eraser: String { current == .zh ? "橡皮擦" : "Eraser" }
+    static var undo: String { current == .zh ? "撤销" : "Undo" }
+    static var clear: String { current == .zh ? "清空" : "Clear" }
+    static var ink: String { current == .zh ? "颜色" : "Color" }
+    static var strokeWidth: String { current == .zh ? "粗细" : "Width" }
+    static var eraserSize: String { current == .zh ? "大小" : "Size" }
+    static var straightLine: String { current == .zh ? "直线" : "Straight line" }
+    static var straightLineHelp: String { current == .zh ? "按住 Shift 再落指，移动手指预览直线，抬指完成。" : "Hold Shift before touching the trackpad. Move to preview a straight line; lift to finish." }
+    static var clickToDraw: String { current == .zh ? "单击画布开始书写" : "Click canvas to draw" }
+    static var clickToEdit: String { current == .zh ? "单击画布调整工具" : "Click canvas to edit tools" }
     static var tapTrackpad: String { current == .zh ? "单击触摸板" : "Tap Trackpad" }
     static var twoFingerScroll: String { current == .zh ? "双指滑动" : "Two-finger Scroll" }
     static var holdDrag: String { current == .zh ? "按住拖动" : "Hold & Drag" }

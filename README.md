@@ -28,6 +28,7 @@
 | 🪟 Always-on-Top | Floats above all apps, including fullscreen ones (YouTube, Keynote, etc.) |
 | ✏️ Pen / Eraser | Switch tools instantly; adjust pen width and eraser size |
 | 🎨 Pen Colors | Choose black, red, orange, green, blue, or purple; your last choice is remembered |
+| 📏 Straight Lines | Hold Shift before drawing to preview a straight line from the first touch to the current point |
 | 🖱️ Mouse Mode | Tap the window to toggle cursor visibility for easy repositioning |
 | 📐 Pan Canvas | Two-finger scroll to pan the canvas — not limited to window size |
 | ⌨️ Global Shortcut | Default `⌥⇧D` to show/hide; fully customizable in Settings |
@@ -63,11 +64,14 @@ Go to [Releases](../../releases), download the latest `.zip`, unzip, and drag `T
 | `Esc` | Hide scratchpad |
 | `1` | Switch to Pen |
 | `2` | Switch to Eraser |
-| Color dot below the Pen button | Choose ink color (Mouse Mode, with Pen selected) |
+| Hold `Shift`, then draw | Draw a straight line; lift your finger to finish |
+| Color row in the toolbar | Choose ink color (Mouse Mode) |
 | `Delete` | Clear canvas |
 | Right-click status icon | Open Settings / Quit |
 
-To change ink, click the canvas to show the cursor if needed, select the Pen, then click the color dot and choose a swatch. Click the canvas again to resume drawing. Existing strokes keep their original colors, including after undo; only new strokes use the selected ink.
+To change ink, click the canvas to show the cursor if needed, then click the Color row and choose a swatch. Click the canvas again to resume drawing. Existing strokes keep their original colors, including after undo; only new strokes use the selected ink.
+
+For math diagrams, hold Shift before placing one finger on the trackpad. The pen previews a straight line at any angle until you lift your finger; releasing Shift early does not bend the stroke. The eraser works anywhere along the line. The labeled toolbar stays opaque and adapts to Light/Dark Mode; in small windows, scroll the toolbar to reach every control.
 
 ### ⚙️ Settings
 
@@ -100,6 +104,7 @@ Right-click the status bar icon → **Preferences**:
 | 🪟 浮动置顶 | 窗口浮于所有应用之上，包括全屏 App（YouTube、Keynote 等）|
 | ✏️ 画笔 / 橡皮 | 一键切换工具，可调节笔粗细和橡皮大小 |
 | 🎨 画笔颜色 | 可选黑、红、橙、绿、蓝、紫六种颜色，自动记住上次选择 |
+| 📏 直线 | 落指前按住 Shift，从起点到手指当前位置实时预览直线 |
 | 🖱️ 鼠标模式 | 单击窗口切换鼠标光标显示，方便调整位置、查看内容 |
 | 📐 平移画布 | 双指滑动平移画布，内容不受限于窗口大小 |
 | ⌨️ 全局快捷键 | 默认 `⌥⇧D` 呼出 / 隐藏，可在设置中自定义 |
@@ -135,11 +140,14 @@ Right-click the status bar icon → **Preferences**:
 | `Esc` | 隐藏草稿纸 |
 | `1` | 切换到画笔 |
 | `2` | 切换到橡皮 |
-| 画笔按钮下方的色点 | 选择画笔颜色（鼠标模式下，选中画笔后显示）|
+| 按住 `Shift` 再书写 | 绘制直线，抬指完成 |
+| 工具栏中的“颜色”一行 | 选择画笔颜色（鼠标模式下）|
 | `Delete` | 清空画布 |
 | 右键状态栏图标 | 打开设置 / 退出 |
 
-更改颜色时，如光标已隐藏，先单击画布显示光标，再选择画笔并点击色点，选择所需颜色。再次单击画布即可继续书写。已有笔迹及撤销恢复的笔迹保留原色，只有新笔迹使用所选颜色。
+更改颜色时，如光标已隐藏，先单击画布显示光标，再点击“颜色”一行选择所需颜色。再次单击画布即可继续书写。已有笔迹及撤销恢复的笔迹保留原色，只有新笔迹使用所选颜色。
+
+绘制数学图形时，先按住 Shift 再将单指放到触控板上。画笔会实时预览任意角度的直线，抬指完成；提前松开 Shift 也不会使该笔变弯。橡皮擦可擦除线段的任意位置。工具栏带文字标签，保持不透明，并适配浅色和深色模式；窗口较小时可滚动工具栏访问全部控件。
 
 ### ⚙️ 设置
 

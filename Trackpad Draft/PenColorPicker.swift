@@ -8,15 +8,24 @@ struct PenColorPicker: View {
         Button {
             isPresented.toggle()
         } label: {
-            HStack(spacing: 4) {
+            HStack(spacing: 6) {
                 Circle()
                     .fill(selection.color)
-                    .frame(width: 16, height: 16)
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 8, weight: .semibold))
+                    .frame(width: 18, height: 18)
+                    .overlay(Circle().strokeBorder(Color.primary.opacity(0.25), lineWidth: 1))
+                Text(L10n.ink)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.primary)
+                Spacer(minLength: 0)
+                Text(selection.localizedName)
+                    .font(.system(size: 10))
                     .foregroundStyle(.secondary)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(.primary)
             }
-            .frame(width: 38, height: 28)
+            .padding(.horizontal, 4)
+            .frame(height: 32)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -36,6 +45,7 @@ struct PenColorPicker: View {
                             Circle()
                                 .fill(ink.color)
                                 .frame(width: 26, height: 26)
+                                .overlay(Circle().strokeBorder(Color.primary.opacity(0.25), lineWidth: 1))
                                 .overlay {
                                     if selection == ink {
                                         Image(systemName: "checkmark")

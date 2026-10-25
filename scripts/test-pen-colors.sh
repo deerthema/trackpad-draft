@@ -14,6 +14,7 @@ xcrun --sdk macosx swiftc -parse-as-library -swift-version 5 \
     'Trackpad Draft/Localization.swift' \
     'Trackpad Draft/DraftWindowManager.swift' \
     'Trackpad Draft/DraftView.swift' \
+    'Trackpad Draft/DrawingToolbar.swift' \
     'Trackpad Draft/TouchCanvasView.swift' \
     Tests/CanvasEngineColorTests.swift -o "$test_dir/tests"
 "$test_dir/tests"

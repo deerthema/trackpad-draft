@@ -53,6 +53,49 @@ struct CanvasEngineColorTests {
         defaults.set("unknown-color", forKey: SettingsKeys.penColor)
         precondition(CanvasEngine(defaults: defaults).penColor == .black,
                      "Unknown saved colors must fall back safely")
-        print("PASS: per-stroke ink, in-progress changes, eraser/clear/draw undo, all six saved colors, invalid preference fallback")
+
+        let lines = CanvasEngine(defaults: defaults)
+        lines.penColor = .purple
+        lines.penLineWidth = 3
+        lines.beginStroke(at: .zero, straightLine: true)
+        lines.addPointToStroke(CGPoint(x: 25, y: 40))
+        lines.addPointToStroke(CGPoint(x: 100, y: 0))
+        precondition(lines.currentStroke?.points == [.zero, CGPoint(x: 100, y: 0)],
+                     "Shift drawing must preview only the anchor and current endpoint")
+        precondition(lines.isStraightStroke)
+        lines.endStroke()
+        precondition(!lines.isStraightStroke)
+        precondition(lines.strokes[0].color == PenColor.purple.color && lines.strokes[0].lineWidth == 3)
+
+        lines.currentMode = .eraser
+        lines.beginStroke(at: CGPoint(x: 50, y: 30), straightLine: true)
+        lines.endStroke()
+        precondition(lines.strokes.count == 1, "Eraser must not remove a distant line")
+        precondition(!lines.isStraightStroke, "Shift must not change eraser behavior")
+        lines.beginStroke(at: CGPoint(x: 50, y: 0))
+        lines.endStroke()
+        precondition(lines.strokes.isEmpty, "The middle of a two-endpoint line must be erasable")
+        lines.undo()
+        precondition(lines.strokes[0].points == [.zero, CGPoint(x: 100, y: 0)])
+
+        lines.currentMode = .pen
+        lines.beginStroke(at: .zero)
+        lines.addPointToStroke(CGPoint(x: 20, y: 30))
+        lines.addPointToStroke(CGPoint(x: 40, y: 0))
+        precondition(lines.currentStroke?.points.count == 3, "Ordinary drawing must remain freehand")
+        lines.cancelStroke()
+        lines.beginStroke(at: .zero, straightLine: true)
+        lines.cancelStroke()
+        precondition(!lines.isStraightStroke && lines.currentStroke == nil)
+        precondition(lines.strokes.count == 1, "Cancelled lines must not be committed")
+
+        lines.beginStroke(at: CGPoint(x: 200, y: 200), straightLine: true)
+        lines.addPointToStroke(CGPoint(x: 200, y: 200))
+        lines.endStroke()
+        lines.currentMode = .eraser
+        lines.beginStroke(at: CGPoint(x: 200, y: 200))
+        lines.endStroke()
+        precondition(lines.strokes.count == 1, "Zero-length strokes must erase without invalid geometry")
+        print("PASS: pen colors and persistence; straight-line previews, ink, cancellation, freehand reset, segment erasing and undo")
     }
 }
