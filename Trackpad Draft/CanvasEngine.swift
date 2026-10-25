@@ -11,7 +11,7 @@ enum DrawingMode {
 struct Stroke: Identifiable {
     let id = UUID()
     var points: [CGPoint]
-    var color: Color = .primary
+    var color: Color = .black
     var lineWidth: CGFloat = 2.0
 }
 
@@ -27,6 +27,17 @@ class CanvasEngine: ObservableObject {
     
     @Published var penLineWidth: CGFloat = 2.0
     @Published var eraserRadius: CGFloat = 10.0
+    @Published var penColor: PenColor {
+        didSet { defaults.set(penColor.rawValue, forKey: SettingsKeys.penColor) }
+    }
+
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        penColor = defaults.string(forKey: SettingsKeys.penColor)
+            .flatMap(PenColor.init(rawValue:)) ?? .black
+    }
     
     // Undo history: each element is a snapshot of `strokes` before a change
     private var undoStack: [[Stroke]] = []
@@ -42,8 +53,8 @@ class CanvasEngine: ObservableObject {
             undoStack.append(strokes)
             eraseStrokes(at: point)
         } else {
-            currentStroke = Stroke(points: [point])
-            currentStroke?.lineWidth = penLineWidth
+            // Capture ink at the start so changing the pen never recolors existing strokes.
+            currentStroke = Stroke(points: [point], color: penColor.color, lineWidth: penLineWidth)
         }
     }
     

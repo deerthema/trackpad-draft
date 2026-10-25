@@ -50,11 +50,11 @@ struct DraftView: View {
                     } else {
                         // Pen: tiny solid dot with subtle halo
                         Circle()
-                            .fill(Color.primary.opacity(0.15))
+                            .fill(engine.penColor.color.opacity(0.15))
                             .frame(width: 12, height: 12)
                     }
                     Circle()
-                        .fill(Color.primary.opacity(0.6))
+                        .fill((engine.currentMode == .pen ? engine.penColor.color : Color.primary).opacity(0.6))
                         .frame(width: 4, height: 4)
                 }
                 .position(vPos)
@@ -85,9 +85,10 @@ struct DraftView: View {
                         
                         // Pen size indicator (only when pen is active & mouse visible)
                         if engine.isMouseVisible && engine.currentMode == .pen {
+                            PenColorPicker(selection: $engine.penColor)
                             VStack(spacing: 2) {
                                 Circle()
-                                    .fill(Color.primary)
+                                    .fill(engine.penColor.color)
                                     .frame(width: engine.penLineWidth, height: engine.penLineWidth)
                                     .frame(width: 18, height: 18)
                                 Slider(value: $engine.penLineWidth, in: 1...8, step: 0.5)

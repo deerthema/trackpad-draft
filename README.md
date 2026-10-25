@@ -27,6 +27,7 @@
 | 🖊️ Trackpad Handwriting | Write with your finger on the trackpad; strokes appear in the floating window in real time |
 | 🪟 Always-on-Top | Floats above all apps, including fullscreen ones (YouTube, Keynote, etc.) |
 | ✏️ Pen / Eraser | Switch tools instantly; adjust pen width and eraser size |
+| 🎨 Pen Colors | Choose black, red, orange, green, blue, or purple; your last choice is remembered |
 | 🖱️ Mouse Mode | Tap the window to toggle cursor visibility for easy repositioning |
 | 📐 Pan Canvas | Two-finger scroll to pan the canvas — not limited to window size |
 | ⌨️ Global Shortcut | Default `⌥⇧D` to show/hide; fully customizable in Settings |
@@ -62,8 +63,11 @@ Go to [Releases](../../releases), download the latest `.zip`, unzip, and drag `T
 | `Esc` | Hide scratchpad |
 | `1` | Switch to Pen |
 | `2` | Switch to Eraser |
+| Color dot below the Pen button | Choose ink color (Mouse Mode, with Pen selected) |
 | `Delete` | Clear canvas |
 | Right-click status icon | Open Settings / Quit |
+
+To change ink, click the canvas to show the cursor if needed, select the Pen, then click the color dot and choose a swatch. Click the canvas again to resume drawing. Existing strokes keep their original colors, including after undo; only new strokes use the selected ink.
 
 ### ⚙️ Settings
 
@@ -95,6 +99,7 @@ Right-click the status bar icon → **Preferences**:
 | 🖊️ 触控板手写 | 用手指在触控板上书写，内容实时显示在浮动窗口上 |
 | 🪟 浮动置顶 | 窗口浮于所有应用之上，包括全屏 App（YouTube、Keynote 等）|
 | ✏️ 画笔 / 橡皮 | 一键切换工具，可调节笔粗细和橡皮大小 |
+| 🎨 画笔颜色 | 可选黑、红、橙、绿、蓝、紫六种颜色，自动记住上次选择 |
 | 🖱️ 鼠标模式 | 单击窗口切换鼠标光标显示，方便调整位置、查看内容 |
 | 📐 平移画布 | 双指滑动平移画布，内容不受限于窗口大小 |
 | ⌨️ 全局快捷键 | 默认 `⌥⇧D` 呼出 / 隐藏，可在设置中自定义 |
@@ -130,8 +135,11 @@ Right-click the status bar icon → **Preferences**:
 | `Esc` | 隐藏草稿纸 |
 | `1` | 切换到画笔 |
 | `2` | 切换到橡皮 |
+| 画笔按钮下方的色点 | 选择画笔颜色（鼠标模式下，选中画笔后显示）|
 | `Delete` | 清空画布 |
 | 右键状态栏图标 | 打开设置 / 退出 |
+
+更改颜色时，如光标已隐藏，先单击画布显示光标，再选择画笔并点击色点，选择所需颜色。再次单击画布即可继续书写。已有笔迹及撤销恢复的笔迹保留原色，只有新笔迹使用所选颜色。
 
 ### ⚙️ 设置
 
@@ -151,6 +159,10 @@ Right-click the status bar icon → **Preferences**:
 - **构建**：Swift Package Manager
 
 ---
+
+## Development checks
+
+On macOS with Xcode installed and its license accepted, run `bash scripts/test-pen-colors.sh` to check stroke colors, undo/erasing, and saved color preferences. If Command Line Tools is your default developer directory, prefix the command with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 
 ## 📄 License
 

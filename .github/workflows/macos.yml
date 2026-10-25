@@ -1,0 +1,35 @@
+name: macOS build
+
+on:
+  push:
+    branches: [main, feat/pen-colors]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check pen colors
+        run: bash scripts/test-pen-colors.sh
+      - name: Build universal Mac app
+        run: |
+          xcodebuild -project 'Trackpad Draft.xcodeproj' \
+            -scheme 'Trackpad Draft' -configuration Release \
+            -destination 'generic/platform=macOS' -derivedDataPath build \
+            -onlyUsePackageVersionsFromResolvedFile \
+            'ARCHS=arm64 x86_64' CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM= build
+      - name: Package app
+        run: ditto -c -k --sequesterRsrc --keepParent 'build/Build/Products/Release/Trackpad Draft.app' TrackpadDraft-PenColors.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TrackpadDraft-PenColors
+          path: TrackpadDraft-PenColors.zip
+          if-no-files-found: error
