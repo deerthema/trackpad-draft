@@ -40,9 +40,8 @@ class TrackpadView: NSView {
         if touches.count > 1 {
             // Cancel any mid-air mistaken drawing from primary finger arriving early
             if activeTouchIdentity != nil {
-                engine?.cancelStroke()
+                engine?.cancelTouch()
                 activeTouchIdentity = nil
-                engine?.virtualCursorPosition = nil
             }
             return
         }
@@ -55,7 +54,10 @@ class TrackpadView: NSView {
             
             let offset = engine?.offset ?? .zero
             let canvasPoint = CGPoint(x: point.x - offset.width, y: point.y - offset.height)
-            engine?.beginStroke(at: canvasPoint)
+            // Latch Shift for this stroke, so releasing the key before lifting does not bend it.
+            engine?.beginTouch(at: canvasPoint,
+                               positioning: event.modifierFlags.contains(.option),
+                               straightLine: event.modifierFlags.contains(.shift))
         }
     }
     
@@ -65,9 +67,8 @@ class TrackpadView: NSView {
         
         if touches.count > 1 {
             if activeTouchIdentity != nil {
-                engine?.cancelStroke()
+                engine?.cancelTouch()
                 activeTouchIdentity = nil
-                engine?.virtualCursorPosition = nil
             }
             return
         }
@@ -80,7 +81,9 @@ class TrackpadView: NSView {
             
             let offset = engine?.offset ?? .zero
             let canvasPoint = CGPoint(x: point.x - offset.width, y: point.y - offset.height)
-            engine?.addPointToStroke(canvasPoint)
+            engine?.updateTouchModifiers(positioning: event.modifierFlags.contains(.option),
+                                         straightLine: event.modifierFlags.contains(.shift))
+            engine?.moveTouch(to: canvasPoint)
         }
     }
     
@@ -88,16 +91,18 @@ class TrackpadView: NSView {
         guard let identity = activeTouchIdentity else { return }
         let touches = event.touches(matching: .any, in: self) // Need .any to detect ended touches
         if let touch = touches.first(where: { $0.identity.isEqual(identity) }), touch.phase == .ended || touch.phase == .cancelled {
-            engine?.endStroke()
-            engine?.virtualCursorPosition = nil
+            if touch.phase == .cancelled {
+                engine?.cancelTouch()
+            } else {
+                engine?.endTouch()
+            }
             activeTouchIdentity = nil
         }
     }
     
     override func touchesCancelled(with event: NSEvent) {
         if activeTouchIdentity != nil {
-            engine?.endStroke()
-            engine?.virtualCursorPosition = nil
+            engine?.cancelTouch()
             activeTouchIdentity = nil
         }
     }

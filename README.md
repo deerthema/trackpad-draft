@@ -27,6 +27,9 @@
 | 🖊️ Trackpad Handwriting | Write with your finger on the trackpad; strokes appear in the floating window in real time |
 | 🪟 Always-on-Top | Floats above all apps, including fullscreen ones (YouTube, Keynote, etc.) |
 | ✏️ Pen / Eraser | Switch tools instantly; adjust pen width and eraser size |
+| 🎨 Pen Colors | Choose black, red, orange, green, blue, or purple; your last choice is remembered |
+| 📏 Straight Lines | Hold Shift before drawing to preview a straight line from the first touch to the current point |
+| 🎯 Position Before Drawing | Hold Option to aim the crosshair without ink; release Option while touching to start precisely |
 | 🖱️ Mouse Mode | Tap the window to toggle cursor visibility for easy repositioning |
 | 📐 Pan Canvas | Two-finger scroll to pan the canvas — not limited to window size |
 | ⌨️ Global Shortcut | Default `⌥⇧D` to show/hide; fully customizable in Settings |
@@ -62,8 +65,17 @@ Go to [Releases](../../releases), download the latest `.zip`, unzip, and drag `T
 | `Esc` | Hide scratchpad |
 | `1` | Switch to Pen |
 | `2` | Switch to Eraser |
+| Hold `Shift`, then draw | Draw a straight line; lift your finger to finish |
+| Hold `Option` and move your finger | Position the crosshair without drawing or erasing; release Option to start |
+| Color row in the toolbar | Choose ink color (Mouse Mode) |
 | `Delete` | Clear canvas |
 | Right-click status icon | Open Settings / Quit |
+
+To change ink, click the canvas to show the cursor if needed, then click the Color row and choose a swatch. Click the canvas again to resume drawing. Existing strokes keep their original colors, including after undo; only new strokes use the selected ink.
+
+For math diagrams, hold Shift before placing one finger on the trackpad. The pen previews a straight line at any angle until you lift your finger; releasing Shift early does not bend the stroke. The eraser works anywhere along the line. The labeled toolbar stays opaque and adapts to Light/Dark Mode; in small windows, scroll the toolbar to reach every control.
+
+For a precise starting point, hold Option and slide one finger to position the crosshair. Keep the finger on the trackpad and release Option to draw from that exact point. Keep Shift held as well to start a straight line. Press Option again during a stroke to finish that mark and reposition without connecting ink. The faint crosshair after lifting marks the last position; the next touch may be elsewhere because the trackpad maps absolute positions.
 
 ### ⚙️ Settings
 
@@ -95,6 +107,9 @@ Right-click the status bar icon → **Preferences**:
 | 🖊️ 触控板手写 | 用手指在触控板上书写，内容实时显示在浮动窗口上 |
 | 🪟 浮动置顶 | 窗口浮于所有应用之上，包括全屏 App（YouTube、Keynote 等）|
 | ✏️ 画笔 / 橡皮 | 一键切换工具，可调节笔粗细和橡皮大小 |
+| 🎨 画笔颜色 | 可选黑、红、橙、绿、蓝、紫六种颜色，自动记住上次选择 |
+| 📏 直线 | 落指前按住 Shift，从起点到手指当前位置实时预览直线 |
+| 🎯 先定位再书写 | 按住 Option 移动十字光标，不留下笔迹；保持接触并松开 Option 后开始 |
 | 🖱️ 鼠标模式 | 单击窗口切换鼠标光标显示，方便调整位置、查看内容 |
 | 📐 平移画布 | 双指滑动平移画布，内容不受限于窗口大小 |
 | ⌨️ 全局快捷键 | 默认 `⌥⇧D` 呼出 / 隐藏，可在设置中自定义 |
@@ -130,8 +145,17 @@ Right-click the status bar icon → **Preferences**:
 | `Esc` | 隐藏草稿纸 |
 | `1` | 切换到画笔 |
 | `2` | 切换到橡皮 |
+| 按住 `Shift` 再书写 | 绘制直线，抬指完成 |
+| 按住 `Option` 并移动手指 | 只定位、不书写或擦除；松开 Option 开始 |
+| 工具栏中的“颜色”一行 | 选择画笔颜色（鼠标模式下）|
 | `Delete` | 清空画布 |
 | 右键状态栏图标 | 打开设置 / 退出 |
+
+更改颜色时，如光标已隐藏，先单击画布显示光标，再点击“颜色”一行选择所需颜色。再次单击画布即可继续书写。已有笔迹及撤销恢复的笔迹保留原色，只有新笔迹使用所选颜色。
+
+绘制数学图形时，先按住 Shift 再将单指放到触控板上。画笔会实时预览任意角度的直线，抬指完成；提前松开 Shift 也不会使该笔变弯。橡皮擦可擦除线段的任意位置。工具栏带文字标签，保持不透明，并适配浅色和深色模式；窗口较小时可滚动工具栏访问全部控件。
+
+需要精确定位起点时，按住 Option，单指滑动至目标位置，保持手指接触并松开 Option，即可从十字光标处书写；同时按住 Shift 可绘制直线。书写过程中再次按住 Option，会结束当前笔迹并允许无墨移动。抬指后的淡色十字光标仅表示上次位置；由于使用触控板绝对坐标，下次落指位置可能不同。
 
 ### ⚙️ 设置
 
@@ -151,6 +175,10 @@ Right-click the status bar icon → **Preferences**:
 - **构建**：Swift Package Manager
 
 ---
+
+## Development checks
+
+On macOS with Xcode installed and its license accepted, run `bash scripts/test-pen-colors.sh` to check stroke colors, undo/erasing, and saved color preferences. If Command Line Tools is your default developer directory, prefix the command with `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 
 ## 📄 License
 

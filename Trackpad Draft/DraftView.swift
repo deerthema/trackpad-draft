@@ -1,8 +1,25 @@
 import SwiftUI
 
 struct DraftView: View {
-    @StateObject private var engine = CanvasEngine()
+    @StateObject private var engine: CanvasEngine
     @State private var keyMonitor: Any?
+    @State private var isShiftPressed = false
+
+    @MainActor
+    init(engine: CanvasEngine? = nil) {
+        _engine = StateObject(wrappedValue: engine ?? CanvasEngine())
+    }
+
+    private var crosshair: Path {
+        Path { path in
+            for sign in [-1.0, 1.0] {
+                path.move(to: CGPoint(x: 14 + sign * 6, y: 14))
+                path.addLine(to: CGPoint(x: 14 + sign * 13, y: 14))
+                path.move(to: CGPoint(x: 14, y: 14 + sign * 6))
+                path.addLine(to: CGPoint(x: 14, y: 14 + sign * 13))
+            }
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -39,157 +56,61 @@ struct DraftView: View {
             TouchCanvasView(engine: engine)
                 .edgesIgnoringSafeArea(.all)
                 
-            // Virtual Cursor
-            if !engine.isMouseVisible, let vPos = engine.virtualCursorPosition {
-                ZStack {
-                    if engine.currentMode == .eraser {
-                        // Eraser: dashed ring showing erase radius
+            // A persistent crosshair: faint at the last location, solid while touching.
+            if !engine.isMouseVisible {
+                GeometryReader { geometry in
+                    ZStack {
+                        if engine.currentMode == .eraser {
+                            Circle()
+                                .stroke(Color.black.opacity(0.6), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                                .frame(width: engine.eraserRadius * 2, height: engine.eraserRadius * 2)
+                        }
+                        if engine.isPositioning {
+                            Circle()
+                                .stroke(Color.blue, lineWidth: 2)
+                                .frame(width: 18, height: 18)
+                        }
+                        crosshair.stroke(Color.white, lineWidth: 3)
+                        .overlay { crosshair.stroke(Color.black, lineWidth: 1) }
+                        .frame(width: 28, height: 28)
                         Circle()
-                            .stroke(Color.secondary.opacity(0.5), style: SwiftUI.StrokeStyle(lineWidth: 1, dash: [3, 3]))
-                            .frame(width: engine.eraserRadius * 2, height: engine.eraserRadius * 2)
-                    } else {
-                        // Pen: tiny solid dot with subtle halo
-                        Circle()
-                            .fill(Color.primary.opacity(0.15))
-                            .frame(width: 12, height: 12)
+                            .fill(engine.penColor.color)
+                            .frame(width: 4, height: 4)
+                            .overlay(Circle().strokeBorder(Color.white, lineWidth: 1))
                     }
-                    Circle()
-                        .fill(Color.primary.opacity(0.6))
-                        .frame(width: 4, height: 4)
+                    .opacity(engine.isTouchActive ? 1 : 0.5)
+                    .position(engine.virtualCursorPosition ?? CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2))
                 }
-                .position(vPos)
                 .allowsHitTesting(false)
             }
-            
-            // UI Overlay
-            VStack {
-                HStack {
+
+            // Opaque controls stay readable in both appearances and while drawing.
+            GeometryReader { geometry in
+                HStack(alignment: .top) {
                     Spacer()
-                    // Compact toolbar at top trailing
-                    VStack(spacing: 10) {
-                        Button(action: { engine.currentMode = .pen }) {
-                            VStack(spacing: 3) {
-                                Image(systemName: "pencil")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(engine.currentMode == .pen ? .blue : .primary)
-                                Text("1")
-                                    .font(.system(size: 8, weight: .bold, design: .rounded))
-                                    .foregroundColor(engine.currentMode == .pen ? .blue : .primary.opacity(0.7))
-                                    .frame(width: 13, height: 13)
-                                    .background(Circle().fill(engine.currentMode == .pen ? Color.blue.opacity(0.2) : Color.primary.opacity(0.1)))
-                            }
-                            .frame(width: 38, height: 38)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        
-                        // Pen size indicator (only when pen is active & mouse visible)
-                        if engine.isMouseVisible && engine.currentMode == .pen {
-                            VStack(spacing: 2) {
-                                Circle()
-                                    .fill(Color.primary)
-                                    .frame(width: engine.penLineWidth, height: engine.penLineWidth)
-                                    .frame(width: 18, height: 18)
-                                Slider(value: $engine.penLineWidth, in: 1...8, step: 0.5)
-                                    .frame(width: 55)
-                                    .controlSize(.mini)
-                            }
-                        }
-                        
-                        Button(action: { engine.currentMode = .eraser }) {
-                            VStack(spacing: 3) {
-                                Image(systemName: "eraser")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(engine.currentMode == .eraser ? .blue : .primary)
-                                Text("2")
-                                    .font(.system(size: 8, weight: .bold, design: .rounded))
-                                    .foregroundColor(engine.currentMode == .eraser ? .blue : .primary.opacity(0.7))
-                                    .frame(width: 13, height: 13)
-                                    .background(Circle().fill(engine.currentMode == .eraser ? Color.blue.opacity(0.2) : Color.primary.opacity(0.1)))
-                            }
-                            .frame(width: 38, height: 38)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        
-                        // Eraser size indicator (only when eraser is active & mouse visible)
-                        if engine.isMouseVisible && engine.currentMode == .eraser {
-                            VStack(spacing: 2) {
-                                Circle()
-                                    .stroke(Color.secondary, lineWidth: 1)
-                                    .frame(width: min(engine.eraserRadius, 18), height: min(engine.eraserRadius, 18))
-                                    .frame(width: 18, height: 18)
-                                Slider(value: $engine.eraserRadius, in: 5...40, step: 1)
-                                    .frame(width: 55)
-                                    .controlSize(.mini)
-                            }
-                        }
-                        
-                        Divider().frame(width: 14)
-                        
-                        // Undo button
-                        Button(action: { engine.undo() }) {
-                            VStack(spacing: 3) {
-                                Image(systemName: "arrow.uturn.backward")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(engine.canUndo ? .primary : .primary.opacity(0.3))
-                                Text("⌘Z")
-                                    .font(.system(size: 7, weight: .bold, design: .rounded))
-                                    .foregroundColor(engine.canUndo ? .primary.opacity(0.7) : .primary.opacity(0.2))
-                                    .frame(width: 18, height: 13)
-                                    .background(Capsule().fill(engine.canUndo ? Color.primary.opacity(0.1) : Color.clear))
-                            }
-                            .frame(width: 38, height: 38)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        .keyboardShortcut("z", modifiers: .command)
-                        .disabled(!engine.canUndo)
-                        
-                        Button(action: {
-                            engine.clearAll()
-                            engine.offset = .zero
-                        }) {
-                            VStack(spacing: 3) {
-                                Image(systemName: "trash")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.red)
-                                Text("⌫")
-                                    .font(.system(size: 7, weight: .bold, design: .rounded))
-                                    .foregroundColor(.red.opacity(0.8))
-                                    .frame(width: 13, height: 13)
-                                    .background(Circle().fill(Color.red.opacity(0.15)))
-                            }
-                            .frame(width: 38, height: 38)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        .keyboardShortcut(.delete, modifiers: []) // Trigger with Backspace
-                    }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 12)
-                    .background(RoundedRectangle(cornerRadius: 14).fill(Color.white.opacity(0.85)))
-                    .shadow(color: .black.opacity(0.08), radius: 4, x: 0, y: 2)
-                    .padding(.trailing, 12)
-                    .padding(.top, 12)
-                    .opacity(engine.isMouseVisible ? 1.0 : 0.4) // Kept dimly visible when drawing
-                    .animation(.easeInOut(duration: 0.2), value: engine.isMouseVisible)
+                    DrawingToolbar(engine: engine, isShiftPressed: isShiftPressed)
+                        .frame(width: 168, height: min(376, max(100, geometry.size.height - 24)))
+                        .allowsHitTesting(engine.isMouseVisible)
                 }
-                
-                Spacer() // push to top
-                
-                // Hidden button for Escape
-                Button(action: {
-                    DraftWindowManager.shared.hideWindow()
-                }) {
-                    EmptyView()
-                }
-                .keyboardShortcut(.escape, modifiers: [])
-                .opacity(0)
+                .padding(12)
             }
+
+            Button(action: { DraftWindowManager.shared.hideWindow() }) {
+                EmptyView()
+            }
+            .keyboardShortcut(.escape, modifiers: [])
+            .opacity(0)
         }
         .onAppear {
-            keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown]) { event in
+            isShiftPressed = NSEvent.modifierFlags.contains(.shift)
+            keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { event in
+                if event.type == .flagsChanged {
+                    isShiftPressed = event.modifierFlags.contains(.shift)
+                    engine.updateTouchModifiers(positioning: event.modifierFlags.contains(.option),
+                                                straightLine: isShiftPressed)
+                    return event
+                }
+                guard event.window?.title == "Draft" else { return event }
                 if event.modifierFlags.contains(.command) {
                     // Cmd+Z: undo
                     if event.keyCode == 6 { // Z key
@@ -218,6 +139,9 @@ struct DraftView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .draftWindowDidShow)) { notification in
+            isShiftPressed = NSEvent.modifierFlags.contains(.shift)
+            engine.updateTouchModifiers(positioning: NSEvent.modifierFlags.contains(.option),
+                                        straightLine: isShiftPressed)
             if let info = notification.object as? [String: Bool], let isFirstTime = info["isFirstTime"], isFirstTime {
                 // Start in mouse mode when window opens for the first time
                 engine.isMouseVisible = true
@@ -226,6 +150,8 @@ struct DraftView: View {
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .draftWindowDidHide)) { _ in
+            isShiftPressed = false
+            engine.cancelTouch()
             // Reset to mouse mode so state is consistent next time the window shows
             engine.isMouseVisible = true
         }

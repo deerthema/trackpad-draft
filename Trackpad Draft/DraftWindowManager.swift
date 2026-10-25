@@ -12,6 +12,7 @@ enum SettingsKeys {
     static let windowHeight = "windowHeight"
     static let windowOpacity = "windowOpacity"
     static let appLanguage = "appLanguage"
+    static let penColor = "penColor"
     
     static var defaultWidth: CGFloat { 800 }
     static var defaultHeight: CGFloat { 500 }
