@@ -62,9 +62,27 @@ struct DrawingToolbar: View {
                 .help(L10n.straightLineHelp)
                 .accessibilityLabel(L10n.straightLineHelp)
 
-                Divider()
-
                 VStack(spacing: 4) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "option")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text(L10n.positionOnly)
+                            .font(.system(size: 11, weight: .medium))
+                        Spacer(minLength: 0)
+                        if engine.isPositioning {
+                            Image(systemName: "scope")
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                    .frame(height: 28)
+                    .foregroundStyle(engine.isPositioning ? Color.white : Color.primary)
+                    .background(engine.isPositioning ? Color.blue : Color(nsColor: .controlBackgroundColor),
+                                in: RoundedRectangle(cornerRadius: 7))
+                    .help(L10n.positionHelp)
+                    .accessibilityLabel(L10n.positionHelp)
+
+                    Divider().padding(.vertical, 6)
+
                     Button { engine.undo() } label: {
                         actionLabel(L10n.undo, symbol: "arrow.uturn.backward", shortcut: "⌘Z")
                             .foregroundStyle(engine.canUndo ? Color.primary : Color.secondary)

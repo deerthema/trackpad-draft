@@ -22,6 +22,9 @@ class CanvasEngine: ObservableObject {
     @Published var offset: CGSize = .zero
     @Published var virtualCursorPosition: CGPoint?
     @Published private(set) var isStraightStroke = false
+    @Published private(set) var isPositioning = false
+    @Published private(set) var isTouchActive = false
+    private var activeTouchPoint: CGPoint?
     
     @Published var currentMode: DrawingMode = .pen
     @Published var isMouseVisible: Bool = true
@@ -47,6 +50,44 @@ class CanvasEngine: ObservableObject {
     // trackpad size roughly 14x8 cm, let's assume normalized 0...1 relative input
     
     // MARK: - Drawing & Erasing
+
+    func beginTouch(at point: CGPoint, positioning: Bool, straightLine: Bool) {
+        activeTouchPoint = point
+        isTouchActive = true
+        isPositioning = positioning
+        if !positioning { beginStroke(at: point, straightLine: straightLine) }
+    }
+
+    func moveTouch(to point: CGPoint) {
+        guard isTouchActive else { return }
+        activeTouchPoint = point
+        if !isPositioning { addPointToStroke(point) }
+    }
+
+    func updateTouchModifiers(positioning: Bool, straightLine: Bool) {
+        let wasPositioning = isPositioning
+        isPositioning = positioning
+        guard !isMouseVisible, let point = activeTouchPoint, wasPositioning != positioning else { return }
+        if positioning {
+            // Finish the current mark before moving the same finger without ink.
+            endStroke()
+        } else {
+            // Start exactly at the visible crosshair, even if the finger has not moved yet.
+            beginStroke(at: point, straightLine: straightLine)
+        }
+    }
+
+    func endTouch() {
+        if !isPositioning { endStroke() }
+        activeTouchPoint = nil
+        isTouchActive = false
+    }
+
+    func cancelTouch() {
+        cancelStroke()
+        activeTouchPoint = nil
+        isTouchActive = false
+    }
     
     func beginStroke(at point: CGPoint, straightLine: Bool = false) {
         isStraightStroke = currentMode == .pen && straightLine
@@ -122,6 +163,7 @@ class CanvasEngine: ObservableObject {
     var canUndo: Bool { !undoStack.isEmpty }
     
     func toggleMouseVisibility(in window: NSWindow?) {
+        endTouch()
         isMouseVisible.toggle()
         if isMouseVisible {
             DraftWindowManager.shared.unlockCursor()

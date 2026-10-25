@@ -67,6 +67,8 @@ struct L10n {
     static var eraserSize: String { current == .zh ? "大小" : "Size" }
     static var straightLine: String { current == .zh ? "直线" : "Straight line" }
     static var straightLineHelp: String { current == .zh ? "按住 Shift 再落指，移动手指预览直线，抬指完成。" : "Hold Shift before touching the trackpad. Move to preview a straight line; lift to finish." }
+    static var positionOnly: String { current == .zh ? "定位" : "Position only" }
+    static var positionHelp: String { current == .zh ? "按住 Option 移动手指，只定位、不书写或擦除。保持手指接触并松开 Option，从十字光标处开始。" : "Hold Option and move your finger to aim without drawing or erasing. Keep touching and release Option to start at the crosshair." }
     static var clickToDraw: String { current == .zh ? "单击画布开始书写" : "Click canvas to draw" }
     static var clickToEdit: String { current == .zh ? "单击画布调整工具" : "Click canvas to edit tools" }
     static var tapTrackpad: String { current == .zh ? "单击触摸板" : "Tap Trackpad" }

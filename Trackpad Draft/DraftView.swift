@@ -1,9 +1,25 @@
 import SwiftUI
 
 struct DraftView: View {
-    @StateObject private var engine = CanvasEngine()
+    @StateObject private var engine: CanvasEngine
     @State private var keyMonitor: Any?
     @State private var isShiftPressed = false
+
+    @MainActor
+    init(engine: CanvasEngine? = nil) {
+        _engine = StateObject(wrappedValue: engine ?? CanvasEngine())
+    }
+
+    private var crosshair: Path {
+        Path { path in
+            for sign in [-1.0, 1.0] {
+                path.move(to: CGPoint(x: 14 + sign * 6, y: 14))
+                path.addLine(to: CGPoint(x: 14 + sign * 13, y: 14))
+                path.move(to: CGPoint(x: 14, y: 14 + sign * 6))
+                path.addLine(to: CGPoint(x: 14, y: 14 + sign * 13))
+            }
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -40,34 +56,40 @@ struct DraftView: View {
             TouchCanvasView(engine: engine)
                 .edgesIgnoringSafeArea(.all)
                 
-            // Virtual Cursor
-            if !engine.isMouseVisible, let vPos = engine.virtualCursorPosition {
-                ZStack {
-                    if engine.currentMode == .eraser {
-                        // Eraser: dashed ring showing erase radius
+            // A persistent crosshair: faint at the last location, solid while touching.
+            if !engine.isMouseVisible {
+                GeometryReader { geometry in
+                    ZStack {
+                        if engine.currentMode == .eraser {
+                            Circle()
+                                .stroke(Color.black.opacity(0.6), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                                .frame(width: engine.eraserRadius * 2, height: engine.eraserRadius * 2)
+                        }
+                        if engine.isPositioning {
+                            Circle()
+                                .stroke(Color.blue, lineWidth: 2)
+                                .frame(width: 18, height: 18)
+                        }
+                        crosshair.stroke(Color.white, lineWidth: 3)
+                        .overlay { crosshair.stroke(Color.black, lineWidth: 1) }
+                        .frame(width: 28, height: 28)
                         Circle()
-                            .stroke(Color.secondary.opacity(0.5), style: SwiftUI.StrokeStyle(lineWidth: 1, dash: [3, 3]))
-                            .frame(width: engine.eraserRadius * 2, height: engine.eraserRadius * 2)
-                    } else {
-                        // Pen: tiny solid dot with subtle halo
-                        Circle()
-                            .fill(engine.penColor.color.opacity(0.15))
-                            .frame(width: 12, height: 12)
+                            .fill(engine.penColor.color)
+                            .frame(width: 4, height: 4)
+                            .overlay(Circle().strokeBorder(Color.white, lineWidth: 1))
                     }
-                    Circle()
-                        .fill((engine.currentMode == .pen ? engine.penColor.color : Color.primary).opacity(0.6))
-                        .frame(width: 4, height: 4)
+                    .opacity(engine.isTouchActive ? 1 : 0.5)
+                    .position(engine.virtualCursorPosition ?? CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2))
                 }
-                .position(vPos)
                 .allowsHitTesting(false)
             }
-            
+
             // Opaque controls stay readable in both appearances and while drawing.
             GeometryReader { geometry in
                 HStack(alignment: .top) {
                     Spacer()
                     DrawingToolbar(engine: engine, isShiftPressed: isShiftPressed)
-                        .frame(width: 168, height: min(340, max(100, geometry.size.height - 24)))
+                        .frame(width: 168, height: min(376, max(100, geometry.size.height - 24)))
                         .allowsHitTesting(engine.isMouseVisible)
                 }
                 .padding(12)
@@ -84,6 +106,8 @@ struct DraftView: View {
             keyMonitor = NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .flagsChanged]) { event in
                 if event.type == .flagsChanged {
                     isShiftPressed = event.modifierFlags.contains(.shift)
+                    engine.updateTouchModifiers(positioning: event.modifierFlags.contains(.option),
+                                                straightLine: isShiftPressed)
                     return event
                 }
                 guard event.window?.title == "Draft" else { return event }
@@ -116,6 +140,8 @@ struct DraftView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .draftWindowDidShow)) { notification in
             isShiftPressed = NSEvent.modifierFlags.contains(.shift)
+            engine.updateTouchModifiers(positioning: NSEvent.modifierFlags.contains(.option),
+                                        straightLine: isShiftPressed)
             if let info = notification.object as? [String: Bool], let isFirstTime = info["isFirstTime"], isFirstTime {
                 // Start in mouse mode when window opens for the first time
                 engine.isMouseVisible = true
@@ -125,7 +151,7 @@ struct DraftView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .draftWindowDidHide)) { _ in
             isShiftPressed = false
-            engine.cancelStroke()
+            engine.cancelTouch()
             // Reset to mouse mode so state is consistent next time the window shows
             engine.isMouseVisible = true
         }

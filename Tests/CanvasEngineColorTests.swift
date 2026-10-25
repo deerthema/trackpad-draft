@@ -96,6 +96,49 @@ struct CanvasEngineColorTests {
         lines.beginStroke(at: CGPoint(x: 200, y: 200))
         lines.endStroke()
         precondition(lines.strokes.count == 1, "Zero-length strokes must erase without invalid geometry")
-        print("PASS: pen colors and persistence; straight-line previews, ink, cancellation, freehand reset, segment erasing and undo")
+        let aiming = CanvasEngine(defaults: defaults)
+        aiming.isMouseVisible = false
+        aiming.beginTouch(at: .zero, positioning: true, straightLine: false)
+        aiming.moveTouch(to: CGPoint(x: 50, y: 50))
+        precondition(aiming.currentStroke == nil && aiming.strokes.isEmpty,
+                     "Option positioning must never put down ink")
+        aiming.updateTouchModifiers(positioning: false, straightLine: true)
+        precondition(aiming.currentStroke?.points == [CGPoint(x: 50, y: 50)],
+                     "Releasing Option must start immediately at the latest crosshair")
+        aiming.moveTouch(to: CGPoint(x: 75, y: 100))
+        aiming.moveTouch(to: CGPoint(x: 150, y: 50))
+        aiming.endTouch()
+        precondition(aiming.strokes[0].points == [CGPoint(x: 50, y: 50), CGPoint(x: 150, y: 50)],
+                     "Option positioning and Shift lines must compose")
+        precondition(!aiming.isTouchActive)
+
+        aiming.beginTouch(at: .zero, positioning: true, straightLine: false)
+        aiming.endTouch()
+        aiming.updateTouchModifiers(positioning: false, straightLine: false)
+        precondition(aiming.currentStroke == nil && aiming.strokes.count == 1,
+                     "Releasing Option after lifting must not create a ghost stroke")
+
+        aiming.currentMode = .eraser
+        aiming.beginTouch(at: CGPoint(x: 100, y: 50), positioning: true, straightLine: false)
+        precondition(aiming.strokes.count == 1, "Positioning must not erase")
+        aiming.updateTouchModifiers(positioning: false, straightLine: false)
+        aiming.endTouch()
+        precondition(aiming.strokes.isEmpty, "Releasing Option must activate the eraser at the crosshair")
+        aiming.undo()
+        precondition(aiming.strokes.count == 1)
+
+        aiming.currentMode = .pen
+        aiming.beginTouch(at: .zero, positioning: false, straightLine: false)
+        aiming.moveTouch(to: CGPoint(x: 10, y: 10))
+        aiming.updateTouchModifiers(positioning: true, straightLine: false)
+        aiming.moveTouch(to: CGPoint(x: 200, y: 200))
+        aiming.updateTouchModifiers(positioning: false, straightLine: false)
+        aiming.moveTouch(to: CGPoint(x: 210, y: 210))
+        aiming.endTouch()
+        precondition(aiming.strokes.count == 3)
+        precondition(aiming.strokes[1].points == [.zero, CGPoint(x: 10, y: 10)])
+        precondition(aiming.strokes[2].points == [CGPoint(x: 200, y: 200), CGPoint(x: 210, y: 210)],
+                     "Repositioning mid-touch must not draw a bridge between strokes")
+        print("PASS: colors, straight lines, undo/erasing, Option positioning, exact release anchor, modifier combinations and no ghost strokes")
     }
 }
